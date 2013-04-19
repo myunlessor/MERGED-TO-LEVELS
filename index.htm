@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>MERGED-TO-LEVELS</title>
+<style type="text/css">
+  pre {
+    margin: 0;
+  }
+</style>
+<script type="text/javascript" src="support/jquery.min.js"></script>
+<script type="text/javascript" src="support/underscore.min.js"></script>
+<script type="text/javascript" src="support/merged.js"></script>
+<script type="text/javascript">
+var converted = (function Y(obj) {
+  _.chain(obj).keys().each(function (key) {
+    var val = obj[key];
+
+    if (_.isObject(val))
+      if (_.isEqual(['_'], _(val).keys()))
+        obj[key] = val['_'];
+      else
+        Y(val);
+  });
+
+  return obj;
+}(function (obj) {
+  var ns = {};
+
+  _.chain(obj).keys().each(function (key) {
+    var parts = key.split(''),
+        parent = ns,
+        value = obj[key].split(',');
+
+    _(parts).each(function (part) {
+      if (_.isUndefined(parent[part]))
+        parent[part] = {};
+      parent = parent[part];
+    });
+
+    parent['_'] = value.length === 1 ? value[0] : value;
+  });
+
+  return ns;
+}(merged)));
+
+(function ($) {
+  $(function () {
+    $('<div>', {
+      css: {
+        width: '280px',
+        fontSize: '16px',
+        color: '#060',
+        margin: '0 auto',
+        border: '1px solid #ccc',
+        padding: '5px'
+      },
+      html: '<pre>' + JSON.stringify(converted, null, '  ') + '</pre>'
+    }).appendTo(document.body);
+  });
+}(jQuery));
+</script>
+</head>
+<body>
+</body>
+</html>
